@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "Tab Group Viewer",
+    "version": "1.0",
+    "description": "Displays a visual overview of all tab groups",
+    "permissions": ["tabs", "tabGroups", "activeTab", "storage"],
+    "host_permissions": ["http://*/*", "https://*/*"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_title": "View Tab Groups"
+    },
+    "chrome_url_overrides": {
+      "newtab": "tab-groups.html"
+    }
+  }
+  
