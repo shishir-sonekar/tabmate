@@ -2,16 +2,31 @@
 
 ### A personal project for effortless browser tab organization.
 
-**Messy browser tabs? Not anymore!**
+Messy browser tabs? Not anymore!
 
-**Soon will be available in Chrome extension store**
+Soon will be available in Chrome extension store
 
 Tabmate helps you manage your Chrome tabs with zero friction by working seamlessly with your existing Chrome Tab Groups. No need for complex setups—just install and start organizing your tabs intuitively.
+
+---
+
+### 💻 Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/tabmate.git
+   ```
+2. Load the unpacked extension in Chrome:
+   - Open `chrome://extensions/`
+   - Enable Developer mode (top right corner)
+   - Click "Load unpacked" and select the `tabmate` folder
+
+---
 
 ## Key Features:
 
 - ✅ Works natively with Chrome’s Tab Groups.
 - 📊 Provides a visual overview of your tabs & groups.
+- 🌌 Enjoy stunning space visuals from NASA server while organizing tabs.
 - 🔄 Effortlessly move tabs between groups and create new groups. (In progress)
 - 🔊 Find the tabs playing audio you have no idea about – No more mystery background sounds!  (In progress)
 - 📊 Stats:
@@ -40,18 +55,6 @@ Say goodbye to tab overload and keep your browsing experience smooth!
 
 ---
 
-### 💻 Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/tabmate.git
-   ```
-2. Load the unpacked extension in Chrome:
-   - Open `chrome://extensions/`
-   - Enable Developer mode (top right corner)
-   - Click "Load unpacked" and select the `tabmate` folder
-   
----
-
 ### 🌟 Contributing
 Contributions are welcome! Feel free to open issues or submit PRs.
 
@@ -62,4 +65,4 @@ MIT License
 
 ---
 
-Developed to solve my own pain point.
+Originally developed to solve my own pain point.
