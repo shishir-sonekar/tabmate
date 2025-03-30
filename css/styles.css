@@ -1,0 +1,251 @@
+/* Base Layout */
+#groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+
+/* Group Card Styling */
+.group {
+    flex: 0 0 auto;     /* Prevent flex growth/shrink */
+    width: 260px;       /* Fixed width for consistency */
+    margin: 5px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    height: fit-content; /* Allow height to adjust to content */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.group:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Group Header */
+.group h3 {
+    margin: 0 0 5px 0;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    width: calc(100% - 12px); /* Account for padding */
+    color: white;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Tab List */
+.tab-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+/* Tab Item */
+.tab-list-item {
+    width: calc(100% - 12px); /* Account for padding */
+    padding: 4px 6px;
+    margin: 6px 0;
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.tab-list-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.03);
+}
+
+/* Close Button */
+.close-tab {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    font-size: 14px;
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.close-tab:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* Animations */
+.fade-in {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Special States */
+.pending-group {
+    border: 3px dashed orange;
+}
+
+.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+/* Image Description */
+#image-description {
+    z-index: 1000;
+}
+
+/* Title Styling */
+.tab-board-title {
+    display: inline-block;
+    position: relative;
+    padding: 10px 20px;
+    font-size: 48px;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.6); /* Semi-transparent background */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.8);
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); /* Glow effect */
+    transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+
+/* Title Hover Effect */
+.tab-board-title:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Smooth fade-in effect */
+.fade-in {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Split group styling */
+.split-group {
+    position: relative;
+}
+
+.split-group .tab-list {
+    margin-bottom: 20px; /* Make room for the part indicator */
+}
+
+.image-description {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    text-align: center;
+    max-width: 60%;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.image-description-expanded {
+    padding: 10px 20px;
+    font-size: 14px;
+    max-width: 80%;
+    white-space: normal;
+    opacity: 1;
+}
+
+.image-description:not(.image-description-expanded):hover {
+    opacity: 0.7;
+}
+
+/* Container styles */
+#groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Tab item styles */
+.tab-favicon {
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+
+.tab-link {
+    flex: 1;
+    margin: 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab-time {
+    flex: 0 0 auto;
+    font-size: 8px;
+    margin-left: 4px;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.05);
+}
+
+/* Add class for white background */
+body.white-theme {
+    background: white !important;
+}

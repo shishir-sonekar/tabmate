@@ -1,52 +1,66 @@
+import { EXTENSION, GROUP_DEFAULTS } from './js/constants.js';
+
+// Handle extension button click
+chrome.action.onClicked.addListener(async () => {
+    try {
+        // Find and close any existing TabMate tabs
+        const tabs = await chrome.tabs.query({});
+        const tabMateTabs = tabs.filter(tab => 
+            tab.url && tab.url.includes(EXTENSION.URLS.NEW_TAB)
+        );
+        
+        // Close existing TabMate tabs
+        await Promise.all(tabMateTabs.map(tab => chrome.tabs.remove(tab.id)));
+        
+        // Open new TabMate tab
+        chrome.tabs.create({ url: EXTENSION.URLS.NEW_TAB });
+    } catch (error) {
+        console.error('Error handling extension click:', error);
+    }
+});
+
+// Handle tab group data requests
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "getTabGroups") {
+    if (message.action === EXTENSION.ACTION_TYPES.GET_TAB_GROUPS) {
         if (!chrome.tabGroups) {
-            console.error("chrome.tabGroups is not available. Your Chrome version might not support it.");
+            console.error("Tab Groups API not available");
             sendResponse({ error: "Tab Groups API not available" });
             return;
         }
 
         (async () => {
-            const groups = await chrome.tabGroups.query({});
-            const tabs = await chrome.tabs.query({});
-            console.log('tabs', tabs);
+            try {
+                // Get all groups and tabs
+                const [groups, tabs] = await Promise.all([
+                    chrome.tabGroups.query({}),
+                    chrome.tabs.query({})
+                ]);
 
-            let tabGroups = {
-            };
-            ungrouped = {
-                title: "Ungrouped Tabs",
-                color: "gray",
-                tabs: []
-            }
-
-            // Find all "Tab Board" tabs
-            const tabBoardTabs = tabs.filter(tab => tab.title && tab.title.toLowerCase().includes("tab board"));
-
-            if (tabBoardTabs.length > 1) {
-                // Sort by tab ID (or last opened time if needed)
-                const sortedTabs = tabBoardTabs.sort((a, b) => a.id - b.id);
-
-                // ❌ Close all extra instances (keeping the first one)
-                for (let i = 0; i < sortedTabs.length-1; i++) {
-                    console.log('Closing duplicate Tab Board:', sortedTabs[i].id);
-                    await chrome.tabs.remove(sortedTabs[i].id);
-                }
-            }
-
-            // Initialize group data
-            groups.forEach(group => {
-                tabGroups[group.id] = {
-                    title: group.title || `Group ${group.id}`,
-                    color: group.color,
+                // Initialize base groups structure
+                const tabGroups = {};
+                const ungrouped = {
+                    title: GROUP_DEFAULTS.UNGROUPED_TITLE,
+                    color: GROUP_DEFAULTS.DEFAULT_COLOR,
                     tabs: []
                 };
-            });
 
-            // Categorize tabs into groups
-            tabs.forEach(tab => {
-                if (tab.groupId !== -1 && tabGroups[tab.groupId]) {
-                    // Add to respective group
-                    tabGroups[tab.groupId].tabs.push({
+                // Set up groups
+                groups.forEach(group => {
+                    tabGroups[group.id] = {
+                        title: group.title || `Group ${group.id}`,
+                        color: group.color,
+                        tabs: []
+                    };
+                });
+
+                // Categorize tabs
+                tabs.forEach(tab => {
+                    // Skip TabMate tabs
+                    if (tab.title?.toLowerCase().includes("tabmate")) {
+                        return;
+                    }
+
+                    const tabInfo = {
                         title: tab.title,
                         url: tab.url,
                         id: tab.id,
@@ -54,29 +68,71 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         lastAccessed: tab.lastAccessed,
                         favIconUrl: tab.favIconUrl,
                         incognito: tab.incognito,
-                    });
-                } else {
-                    // Add to ungrouped
-                    ungrouped.tabs.push({
-                        title: tab.title,
-                        url: tab.url,
-                        id: tab.id,
                         audible: tab.audible,
                         frozen: tab.frozen,
-                        mutedInfo: tab.mutedInfo,
-                        pinned: tab.pinned,
-                        lastAccessed: tab.lastAccessed,
-                        favIconUrl: tab.favIconUrl,
-                        incognito: tab.incognito,
-                    });
-                }
-            });
+                        mutedInfo: tab.mutedInfo
+                    };
 
-            console.log("Tab Groups Data:", tabGroups);
-            sendResponse({ tabGroups, ungrouped });
+                    // Add to appropriate group or ungrouped
+                    if (tab.groupId !== -1 && tabGroups[tab.groupId]) {
+                        tabGroups[tab.groupId].tabs.push(tabInfo);
+                    } else {
+                        ungrouped.tabs.push(tabInfo);
+                    }
+                });
 
+                // Process and split groups
+                let allGroups = [...Object.values(tabGroups), ungrouped];
+                
+                // Sort initially by title
+                allGroups.sort((a, b) => {
+                    return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+                });
+
+                // Process each group and split if necessary
+                const processedGroups = [];
+                allGroups.forEach(group => {
+                    if (group.tabs.length <= GROUP_DEFAULTS.MAX_TABS_PER_GROUP) {
+                        processedGroups.push(group);
+                    } else {
+                        // Split into chunks of 8 tabs
+                        const totalParts = Math.ceil(group.tabs.length / GROUP_DEFAULTS.TABS_PER_SPLIT);
+                        for (let i = 0; i < group.tabs.length; i += GROUP_DEFAULTS.TABS_PER_SPLIT) {
+                            const partNumber = Math.floor(i / GROUP_DEFAULTS.TABS_PER_SPLIT) + 1;
+                            processedGroups.push({
+                                ...group,
+                                title: `${group.title} (${partNumber}/${totalParts})`,
+                                tabs: group.tabs.slice(i, i + GROUP_DEFAULTS.TABS_PER_SPLIT),
+                                originalTitle: group.title,
+                                isPartial: true,
+                                partNumber: partNumber,
+                                totalParts: totalParts
+                            });
+                        }
+                    }
+                });
+
+                // Final sort to keep split groups together
+                processedGroups.sort((a, b) => {
+                    const titleA = (a.originalTitle || a.title).toLowerCase();
+                    const titleB = (b.originalTitle || b.title).toLowerCase();
+                    if (titleA !== titleB) {
+                        return titleA.localeCompare(titleB);
+                    }
+                    // If from same group, sort by part number
+                    if (a.partNumber && b.partNumber) {
+                        return a.partNumber - b.partNumber;
+                    }
+                    return 0;
+                });
+
+                sendResponse({ tabGroups: processedGroups });
+            } catch (error) {
+                console.error('Error processing tab groups:', error);
+                sendResponse({ error: 'Failed to process tab groups' });
+            }
         })();
 
-        return true; // Ensures async sendResponse works
+        return true; // Keep message channel open for async response
     }
 });

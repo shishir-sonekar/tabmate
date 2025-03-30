@@ -19,6 +19,7 @@ Tabmate helps you manage your Chrome tabs with zero friction by working seamless
    - Open `chrome://extensions/`
    - Enable Developer mode (top right corner)
    - Click "Load unpacked" and select the `tabmate` folder
+   
 
 ---
 
