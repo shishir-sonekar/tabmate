@@ -5,6 +5,7 @@ export class BackgroundImageManager {
         this.descriptionDiv = null;
         this.currentImageUrl = null;
         this.setupThemeToggle();
+        this.loadThemeState();
     }
 
     setupThemeToggle() {
@@ -14,20 +15,55 @@ export class BackgroundImageManager {
         }
     }
 
+    loadThemeState() {
+        chrome.storage.local.get(['themeState'], (result) => {
+            const hasSpaceTheme = result.themeState === 'space';
+            if (hasSpaceTheme) {
+                this.enableSpaceTheme();
+            } else {
+                this.disableSpaceTheme();
+            }
+        });
+    }
+
     toggleTheme() {
         const body = document.body;
-        if (body.classList.contains('white-theme')) {
-            // Switch back to space background
-            body.classList.remove('white-theme');
-            if (this.currentImageUrl) {
-                this.setBackgroundImage(this.currentImageUrl);
-            }
-            document.getElementById('themeToggle').textContent = 'Switch to White';
+        const toggleButton = document.getElementById('themeToggle');
+        
+        if (body.classList.contains('space-theme')) {
+            this.disableSpaceTheme();
         } else {
-            // Switch to white background
-            body.classList.add('white-theme');
-            document.getElementById('themeToggle').textContent = 'Switch to Space';
+            this.enableSpaceTheme();
         }
+    }
+
+    enableSpaceTheme() {
+        const body = document.body;
+        const toggleButton = document.getElementById('themeToggle');
+        
+        body.classList.add('space-theme');
+        toggleButton.textContent = 'Disable Background';
+        if (this.currentImageUrl) {
+            this.setBackgroundImage(this.currentImageUrl);
+        } else {
+            this.setSpaceAbstractBackground();
+        }
+        if (this.descriptionDiv) {
+            this.descriptionDiv.style.display = 'block';
+        }
+        chrome.storage.local.set({ themeState: 'space' });
+    }
+
+    disableSpaceTheme() {
+        const body = document.body;
+        const toggleButton = document.getElementById('themeToggle');
+        
+        body.classList.remove('space-theme');
+        toggleButton.textContent = 'Enable Background';
+        if (this.descriptionDiv) {
+            this.descriptionDiv.style.display = 'none';
+        }
+        chrome.storage.local.set({ themeState: 'plain' });
     }
 
     async setSpaceAbstractBackground() {
@@ -63,11 +99,8 @@ export class BackgroundImageManager {
 
     setBackgroundImage(imageUrl) {
         this.currentImageUrl = imageUrl;
-        if (!document.body.classList.contains('white-theme')) {
+        if (document.body.classList.contains('space-theme')) {
             document.body.style.background = `url(${imageUrl})`;
-            document.body.style.backgroundSize = "cover";
-            document.body.style.backgroundPosition = "center";
-            document.body.style.backgroundRepeat = "no-repeat";
         }
     }
 
@@ -77,6 +110,11 @@ export class BackgroundImageManager {
         }
 
         this.descriptionDiv.innerHTML = `Source: <strong>${title}</strong> - <em>Credit: ${photographer}</em>Description: ${description}`;
+        
+        // Hide description if in light theme
+        if (document.body.classList.contains('light-theme')) {
+            this.descriptionDiv.style.display = 'none';
+        }
     }
 
     createDescriptionDiv() {

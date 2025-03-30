@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("Dashboard loaded");
     function renderTreemap(data) {
         const width = 1000, height = 600;
         const svg = d3.select("svg")
@@ -83,35 +84,22 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (!response || !response.tabGroups || Object.keys(response.tabGroups).length === 0) {
+        if (!response || !response.tabGroups) {
             console.log("No tab groups found.");
             return;
         }
 
         let now = Date.now();
-        let allTabs = response.ungrouped.tabs.concat(...Object.values(response.tabGroups).map(g => g.tabs));
+        let allTabs = response.tabGroups.flatMap(group => group.tabs);
+        
         let minTime = d3.min(allTabs, d => d.lastAccessed);
         let maxTime = d3.max(allTabs, d => d.lastAccessed);
         let sizeScale = d3.scaleLinear().domain([minTime, maxTime]).range([1, 5]);
 
         let data = [];
 
-        // Add ungrouped tabs
-        if (response.ungrouped && response.ungrouped.tabs.length > 0) {
-            data.push({
-                name: "Ungrouped Tabs",
-                size: response.ungrouped.tabs.length,
-                color: "#ff9800",
-                children: response.ungrouped.tabs.map(tab => ({
-                    name: tab.title,
-                    size: sizeScale(tab.lastAccessed),
-                    url: tab.url
-                }))
-            });
-        }
-
-        // Add grouped tabs
-        Object.values(response.tabGroups).forEach(group => {
+        // Process all groups including ungrouped
+        response.tabGroups.forEach(group => {
             data.push({
                 name: group.title,
                 size: group.tabs.length,
